@@ -32,7 +32,6 @@ namespace VotingRecordClient
 
                     Console.WriteLine("Do you want to see results from a party or from a TD? (Enter party or name): ");
                     string partyorTD = Console.ReadLine();
-                    Console.WriteLine(partyorTD);
 
                     Console.WriteLine("thanks!, now please enter the party or TD name you wish to review: ");
                     string name = Console.ReadLine();
