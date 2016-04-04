@@ -38,15 +38,15 @@ namespace VotingRecordClient
 
                     if (partyorTD == 1)
                     {
-                        showAll();
+                        showAll(client);
                     }
                     else if (partyorTD == 2)
                     {
-                        showTD();
+                        showTD(client);
                     }
                     else if (partyorTD == 3)
                     {
-                        showParty();
+                        showParty(client);
                     }
                     else
                     {
@@ -65,13 +65,8 @@ namespace VotingRecordClient
             }
         }
 
-        public static async void showAll()
+        public static async void showAll(HttpClient client)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("http://localhost:1194/");                                             // base URL for API Controller i.e. RESFul service
-            client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
-
             Console.WriteLine("Thanks here you are");
             HttpResponseMessage response = client.GetAsync("api/record").Result;
             Console.WriteLine(response);
@@ -90,13 +85,8 @@ namespace VotingRecordClient
             }
             RunAsync();
         }
-        public static async void showTD()
+        public static async void showTD(HttpClient client)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("http://localhost:1194/");                                             // base URL for API Controller i.e. RESFul service
-            client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
-
             Console.WriteLine("Thanks, now which TD would you like to see voting record for?");
             string tdname = Console.ReadLine();
             string tdAPIcall = "bill/name/" + tdname;
@@ -119,13 +109,8 @@ namespace VotingRecordClient
             RunAsync();
         }
 
-        public static async void showParty()
+        public static async void showParty(HttpClient client)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("http://localhost:1194/");                                             // base URL for API Controller i.e. RESFul service
-            client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
-
             Console.WriteLine("Thanks, now which party would you like to see voting record for?");
             string tdname = Console.ReadLine();
             string tdAPIcall = "bill/party/" + tdname;
