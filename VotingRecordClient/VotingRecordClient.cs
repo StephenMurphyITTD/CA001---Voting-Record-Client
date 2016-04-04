@@ -34,17 +34,17 @@ namespace VotingRecordClient
                     Console.WriteLine("1. Query what way everyone voted on a bill ");
                     Console.WriteLine("2. Query what a specific TD voted for in a bill ");
                     Console.WriteLine("3. Query what way a party as a block voted in a bill ");
-                    int partyorTD = Convert.ToInt32(Console.ReadLine());
+                    int userChoice = Convert.ToInt32(Console.ReadLine());
 
-                    if (partyorTD == 1)
+                    if (userChoice == 1)
                     {
                         showAll(client);
                     }
-                    else if (partyorTD == 2)
+                    else if (userChoice == 2)
                     {
                         showTD(client);
                     }
-                    else if (partyorTD == 3)
+                    else if (userChoice == 3)
                     {
                         showParty(client);
                     }
