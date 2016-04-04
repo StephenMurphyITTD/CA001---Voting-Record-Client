@@ -30,31 +30,31 @@ namespace VotingRecordClient
                     client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
 
-                    Console.WriteLine("Do you want to see results from a party or from a TD? (Enter party or name): ");
-                    string partyorTD = Console.ReadLine();
+                    Console.WriteLine("Options Available to Execute: ");
+                    Console.WriteLine("1. Query what way everyone voted on a bill ");
+                    Console.WriteLine("2. Query what a specific TD voted for in a bill ");
+                    Console.WriteLine("3. Query what way a party as a block voted in a bill ");
+                    int partyorTD = Convert.ToInt32(Console.ReadLine());
 
-                    Console.WriteLine("thanks!, now please enter the party or TD name you wish to review: ");
-                    string name = Console.ReadLine();
-
-                    string APICall = "bill/" + partyorTD + "/" + name;
-                    Console.WriteLine(APICall);
-
-                    //HttpResponseMessage response = client.GetAsync("bill/party/SinnFein").Result;
-                    HttpResponseMessage response = client.GetAsync(APICall).Result;
-                    Console.WriteLine(response.IsSuccessStatusCode);
-                    Console.WriteLine(response);
-
-                    if (response.IsSuccessStatusCode)
+                    if (partyorTD == 1)
                     {
-                        byte[] x = await response.Content.ReadAsByteArrayAsync();
-                        string message = Encoding.UTF8.GetString(x);
-                        Console.WriteLine(message);
-                        Console.ReadKey(true);
+                        showAll();
+                    }
+                    else if (partyorTD == 2)
+                    {
+                        showTD();
+                    }
+                    else if (partyorTD == 3)
+                    {
+                        showParty();
                     }
                     else
                     {
-                        Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
-                        Console.ReadKey(true);
+                        Console.WriteLine("Your answer needs to be between 1 - 3");
+                        Console.WriteLine(" ");
+                        Console.WriteLine(" ");
+                        Console.WriteLine(" ");
+                        RunAsync();
                     }
                 }
             }
@@ -63,6 +63,89 @@ namespace VotingRecordClient
                 Console.WriteLine(e.ToString());
                 Console.ReadKey(true);
             }
+        }
+
+        public static async void showAll()
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:1194/");                                             // base URL for API Controller i.e. RESFul service
+            client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
+
+            Console.WriteLine("Thanks here you are");
+            HttpResponseMessage response = client.GetAsync("api/record").Result;
+            Console.WriteLine(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                byte[] x = await response.Content.ReadAsByteArrayAsync();
+                string message = Encoding.UTF8.GetString(x);
+                Console.WriteLine(message);
+                Console.ReadKey(true);
+            }
+            else
+            {
+                Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
+                Console.ReadKey(true);
+            }
+            RunAsync();
+        }
+        public static async void showTD()
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:1194/");                                             // base URL for API Controller i.e. RESFul service
+            client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
+
+            Console.WriteLine("Thanks, now which TD would you like to see voting record for?");
+            string tdname = Console.ReadLine();
+            string tdAPIcall = "bill/name/" + tdname;
+            HttpResponseMessage response = client.GetAsync(tdAPIcall).Result;
+            Console.WriteLine(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                //byte[] x = await response.Content.ReadAsByteArrayAsync();
+                //string message = Encoding.UTF8.GetString(x);
+                String message = response.Content.ReadAsAsync<string>().Result;                  // accessing the Result property blocks
+                Console.WriteLine(message);                                                     // the greeting
+                Console.ReadKey(true);
+            }
+            else
+            {
+                Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
+                Console.ReadKey(true);
+            }
+            RunAsync();
+        }
+
+        public static async void showParty()
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:1194/");                                             // base URL for API Controller i.e. RESFul service
+            client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
+
+            Console.WriteLine("Thanks, now which party would you like to see voting record for?");
+            string tdname = Console.ReadLine();
+            string tdAPIcall = "bill/party/" + tdname;
+            HttpResponseMessage response = client.GetAsync(tdAPIcall).Result;
+            Console.WriteLine(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                byte[] x = await response.Content.ReadAsByteArrayAsync();
+                string message = Encoding.UTF8.GetString(x);
+                //String message = response.Content.ReadAsAsync<string>().Result;                  // accessing the Result property blocks
+                Console.WriteLine(message);                                                     // the greeting
+                Console.ReadKey(true);
+            }
+            else
+            {
+                Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
+                Console.ReadKey(true);
+            }
+            RunAsync();
         }
 
         class response
