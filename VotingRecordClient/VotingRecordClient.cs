@@ -2,12 +2,12 @@
 // uses ASP.Net Web API Client API libraries installed in the solution using NuGet
 // get hello world greeting and display for a specified name
 
-using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.IO;
 
 namespace VotingRecordClient
 {
@@ -24,39 +24,70 @@ namespace VotingRecordClient
         {
             try
             {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri("http://localhost:1194/");                                             // base URL for API Controller i.e. RESFul service
-                    client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri("http://votingrecord.azurewebsites.net");                              // base URL for API Controller i.e. RESFul service
+                //client.BaseAddress = new Uri("http://localhost:56174");
+                client.DefaultRequestHeaders.Accept.Clear();                                                        // add an Accept header 
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));   // or application/xml or application/json
 
-                    Console.WriteLine("Options Available to Execute: ");
-                    Console.WriteLine("1. Query what way everyone voted on a bill ");
-                    Console.WriteLine("2. Query what a specific TD voted for in a bill ");
-                    Console.WriteLine("3. Query what way a party as a block voted in a bill ");
-                    int userChoice = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine(client.BaseAddress);
+                Console.WriteLine("Getting All Records for this bill...");
+                Console.ReadKey();
+                showAll(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
 
-                    if (userChoice == 1)
-                    {
-                        showAll(client);
-                    }
-                    else if (userChoice == 2)
-                    {
-                        showTD(client);
-                    }
-                    else if (userChoice == 3)
-                    {
-                        showParty(client);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Your answer needs to be between 1 - 3");
-                        Console.WriteLine(" ");
-                        Console.WriteLine(" ");
-                        Console.WriteLine(" ");
-                        RunAsync();
-                    }
-                }
+                Console.WriteLine("Getting Record for Enda Kenny...");
+                Console.ReadKey();
+                showTD(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+
+                Console.WriteLine("Getting Record for Sinn Fein...");
+                Console.ReadKey();
+                showParty(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+                Console.WriteLine("Getting Record for all Absent TDs...");
+                Console.ReadKey();
+                showVote(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+                Console.WriteLine("Inserting Stephen Murphy (Party: Independent, Vote: Nil) to DB...");
+                Console.ReadKey();
+                insertRecord(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+                Console.WriteLine("Getting Record for Stephen Murphy...");
+                showSteMur(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+                Console.WriteLine("Updating Stephen Murphy to Vote Ta in the DB...");
+                Console.ReadKey();
+                updateRecord(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+                Console.WriteLine("Getting Record for Stephen Murphy...");
+                showSteMur(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+                Console.WriteLine("Deleting Stephen Murphy from the DB entirely...");
+                Console.ReadKey();
+                deleteRecord(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
+
+                Console.WriteLine("Getting Record for Stephen Murphy...");
+                showSteMur(client);
+                Console.WriteLine(" ");
+                Console.ReadKey();
             }
             catch (Exception e)
             {
@@ -65,79 +96,154 @@ namespace VotingRecordClient
             }
         }
 
-        public static async void showAll(HttpClient client)
+        public static void showAll(HttpClient client)
         {
-            Console.WriteLine("Thanks here you are");
-            HttpResponseMessage response = client.GetAsync("api/record").Result;
-            Console.WriteLine(response);
-
+            HttpResponseMessage response = client.GetAsync("BillNo/All").Result;
+            
             if (response.IsSuccessStatusCode)
             {
-                byte[] x = await response.Content.ReadAsByteArrayAsync();
-                string message = Encoding.UTF8.GetString(x);
-                Console.WriteLine(message);
-                Console.ReadKey(true);
+
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
             }
             else
             {
+                Console.WriteLine(response.StatusCode);
                 Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
                 Console.ReadKey(true);
             }
-            RunAsync();
         }
-        public static async void showTD(HttpClient client)
+        public static void showTD(HttpClient client)
         {
-            Console.WriteLine("Thanks, now which TD would you like to see voting record for?");
-            string tdname = Console.ReadLine();
-            string tdAPIcall = "bill/name/" + tdname;
+            string name = "Enda";
+            string surname = "Kenny";
+            string tdAPIcall = "billNo/TD/" + name + "/" + surname;
             HttpResponseMessage response = client.GetAsync(tdAPIcall).Result;
-            Console.WriteLine(response);
 
             if (response.IsSuccessStatusCode)
             {
-                //byte[] x = await response.Content.ReadAsByteArrayAsync();
-                //string message = Encoding.UTF8.GetString(x);
-                String message = response.Content.ReadAsAsync<string>().Result;                  // accessing the Result property blocks
-                Console.WriteLine(message);                                                     // the greeting
-                Console.ReadKey(true);
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
             }
             else
             {
                 Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
                 Console.ReadKey(true);
             }
-            RunAsync();
         }
 
-        public static async void showParty(HttpClient client)
+        public static void showParty(HttpClient client)
         {
-            Console.WriteLine("Thanks, now which party would you like to see voting record for?");
-            string tdname = Console.ReadLine();
-            string tdAPIcall = "bill/party/" + tdname;
+            string party = "SF";
+            string partyAPIcall = "billNo/Party/" + party;
+            HttpResponseMessage response = client.GetAsync(partyAPIcall).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+            }
+            else
+            {
+                Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
+                Console.ReadKey(true);
+            }
+        }
+
+        public static void showVote(HttpClient client)
+        {
+            string vote = "Absent";
+            string VoteAPIcall = "billNo/Vote/" + vote;
+            HttpResponseMessage response = client.GetAsync(VoteAPIcall).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+            }
+            else
+            {
+                Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
+                Console.ReadKey(true);
+            }
+        }
+
+        public static void insertRecord(HttpClient client)
+        {
+            string URI = "http://votingrecord.azurewebsites.net/BillNo/Insert/Stephen/Murphy/Independent/Nil";
+            string data = "";
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URI);
+            request.Method = "POST";
+            request.ContentType = "text/plain";
+
+            using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
+            {
+                writer.WriteLine(data);
+            }
+
+            WebResponse response = request.GetResponse();
+            if (response.ContentLength == 0)
+                Console.WriteLine("OK");
+            else
+                Console.WriteLine(response);
+
+        }
+
+        public static void updateRecord(HttpClient client)
+        {
+            string URI = "http://votingrecord.azurewebsites.net/BillNo/Update/Stephen/Murphy/Ta";
+            string data = "";
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URI);
+            request.Method = "PUT";
+            request.ContentType = "text/plain";
+
+            using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
+            {
+                writer.WriteLine(data);
+            }
+
+            WebResponse response = request.GetResponse();
+            if (response.ContentLength == 0)
+                Console.WriteLine("OK");
+            else
+                Console.WriteLine(response);
+
+        }
+        public static void deleteRecord(HttpClient client)
+        {
+            string URI = "http://votingrecord.azurewebsites.net/BillNo/Delete/Stephen/Murphy";
+            string data = "";
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URI);
+            request.Method = "DELETE";
+            request.ContentType = "text/plain";
+
+            using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
+            {
+                writer.WriteLine(data);
+            }
+
+            WebResponse response = request.GetResponse();
+            if (response.ContentLength == 0)
+                Console.WriteLine("OK");
+            else
+                Console.WriteLine(response);
+        }
+
+        public static void showSteMur(HttpClient client)
+        {
+            string name = "Stephen";
+            string surname = "Murphy";
+            string tdAPIcall = "billNo/TD/" + name + "/" + surname;
             HttpResponseMessage response = client.GetAsync(tdAPIcall).Result;
-            Console.WriteLine(response);
 
             if (response.IsSuccessStatusCode)
             {
-                byte[] x = await response.Content.ReadAsByteArrayAsync();
-                string message = Encoding.UTF8.GetString(x);
-                //String message = response.Content.ReadAsAsync<string>().Result;                  // accessing the Result property blocks
-                Console.WriteLine(message);                                                     // the greeting
-                Console.ReadKey(true);
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
             }
             else
             {
                 Console.WriteLine(response.StatusCode + " " + response.ReasonPhrase);
                 Console.ReadKey(true);
             }
-            RunAsync();
-        }
-
-        class response
-        {
-            public string Name { get; set; }
-            public string Party { get; set; }
-            public string Vote { get; set; }
         }
     }
 }
